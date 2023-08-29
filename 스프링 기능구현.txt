@@ -1,0 +1,52 @@
+기능 추가하기
+
+
+1. 테이블 생성 및 Command클래스 작성
+
+  1) DB에 테이블 생성
+  2) com.기능명.domain폴더를 만들고 테이블에 맞게 Command클래스를 생성한다.
+
+   * Command, DTO, VO 클래스는 그냥 같은 것이라고 생각하면 된다.
+   * toString() 메서드는 객체 or 변수를 println()등의 메서드를 사용하여 출력할 때 주소가 아닌 문자열로 보여준다.
+
+
+2. Mybatis의 Mapper파일과 설정파일 작성 
+
+  1) DB에 들어갈 CRUD구문에 맞춰서 maybatis의 Mapper파일을 작성한다.
+  2) mybatis설정파일에 Mapper파일의 경로를 태그로 넣는다. ( <mappers>태그 사이에 <mapper resource="경로"/>태그를 사용해서 경로설정한다. )
+  
+  * Mapper파일은 태그로 구성되어 있다. <mapper namespace="네임스페이스명">  <typeAlias alias="별칭" type="경로"/>
+    namespace : sql문 태그의 묶음 개념이라고 생각하면 편하다. 한 네임스페이스 내에서는 동일한 id를 사용할 수 없지만 다른 네임스페이스에선 동일 id 사용가능하다.
+    typeAlias : 경로에 별칭을 줘서 태그에 적을 내용을 간소화할 수 있다. 주로 Command(VO)클래스의 경로에 별칭을 주고 파라미터 타입과 리졸트 타입에서 사용한다.
+    
+  * SQL문이 저장된 태그 <select id="아이디" parameterType="파라미터 타입"  resultType="리졸트 타입">
+    id : 네임스페이스 내에서 유일한 값을 지정해야 한다. 추후에 저장한 SQL문을 사용하기 위해 필요하다.
+    parameterType : SQL실행에 필요한 객체의 타입을 정한다. 주로 Command(VO) or 기본자료형을 사용한다. (DB에 넣을 타입이라고 생각하면 편함)
+    resultType : DB에서 받아온 데이터 값을 저장할 객체 타입을 정한다. 당연하게도 select문을 사용할 때는 필수적으로 설정해야 하고 그 외에는 사용하지 않는다. (DB에서 받아올 타입이라고 생각하면 편함)
+    <![CDATA[  ]]> : SQL문에서 ">,<" 등의 기호를 사용할 때 태그로 인식하지 않도록 하기 위해서 사용된다.
+
+
+3. DAO인터페이스 및 Impl클래스 작성
+
+   1) DAO인터페이스를 만들어서 각 역할별로 메서드를 선언한다.
+   2) DAO인터페이스를 상속받은 DAOImpl(or Service)클래스를 만든다. 
+   * DAOImpl클래스는 SqlSessionDaoSupport를 클래스 상속받아서 매퍼에 등록된 sql문들을 사용하도록 한다. 사용법 -> getSqlSession().crud타입.("매퍼에 등록된 id",매개변수); 
+   * crud타입은 insert, update, delete, selectOne, selectList (앞에 3개에 대한 설명은 생략한다. One과 List의 차이는 DB에서 단일 행만을 받아오느냐? 혹은 여러 행을 받아오느냐? 의 차이다.)
+   * 이 때도 반환형이 있으면 select문 없으면 나머지라고 생각하면 된다.
+
+4. Service인터페이스 및 Impl클래스 작성
+
+5. 컨트롤러 작성
+
+  1) 어노테이션 인식을 위해 dispather-servlet.xml에 컨트롤러가 포함된 패키지의 경로를 등록한다. ( <context:component-scan base-package="경로" /> 태그를 사용한다. )
+  2) 컨트롤러의 역할을 수행할 수 있게 하기 위해 컨트롤러 클래스 선언부 위에 @Controller 어노테이션 추가한다.
+  3) DB와 연동하는 CRUD메서드를 실행하기 위해 Dao속성의 멤버변수를 선언하고 의존성 주입을 시켜주기 위해 @Autowired 어노테이션을 상단에 추가한다.
+  4) 어떤 명령어가 요청되었을 때 메서드가 실행될지를 결정하기 위해 메서드별로 @RequestMapping("요청명령어")를 작성한다.
+  5) 메서드의 반환형은 String 혹은 ModelAndView를 사용한다.
+
+   * String은 view(jsp페이지명에서 접두사(/WEB-INF/ 등의 경로)와 접미사(.jsp)를 제거한 부분)만 반환할 때 사용한다. ex) insert,delete,update기능처럼 데이터를 DB에 넣을 때 사용한다. 
+   * ModelAndView는 view와 model(DB에서 뽑아온 데이터)을 동시에 반환할 때 사용한다. ex) select기능처럼 DB에서 받아온 데이터를 사용자에게 보여줘야 할 때 사용한다.
+
+
+5. jsp페이지
+
